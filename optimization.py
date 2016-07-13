@@ -28,12 +28,25 @@ def fitness(genotype):
     return d
 
 
+def interpret(output):
+    for i, prediction in enumerate(output):
+        print("Neural opinion about {} ({}):".format(sampleid[i][1], sampleid[i][0]))
+        for (refid, refname), param in zip(referenceid, prediction):
+            print("\tAmount of {}: {}".format(refname, round(param, 4)))
+
+
+def hardmax(Z):
+    return Z / Z.max(axis=0)
+
+
 y = np.eye(5, 5)
 headers, sampleid, referenceid, samples, references = parse_data(chain)
 
 model = Sequential()
-model.add(Dense(input_dim=10, output_dim=5, activation="sigmoid"))
+model.add(Dense(input_dim=10, output_dim=50, activation="tanh"))
+model.add(Dense(output_dim=5, activation="softmax"))
 model.compile("rmsprop", "mse")
-model.fit(references, y, show_accuracy=True)
+model.fit(references, y, nb_epoch=300)
 
-print(model.predict(samples, verbose=1))
+out = model.predict(samples)
+interpret(out)
